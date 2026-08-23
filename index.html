@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เครื่องคำนวณขวดเร่งเวลา Clone (ระบบจับคู่คุ้มสุด)</title>
+  <title>เครื่องคำนวณขวดเร่งเวลา Clone (ระบบคำนวณแม่นยำ)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -93,7 +93,6 @@
       font-size: 0.75rem;
       padding: 2px 8px;
       border-radius: 6px;
-      font-weight: normal;
     }
     .badge-green { background: #22c55e; color: #052e16; font-weight: bold; }
     .badge-blue { background: #38bdf8; color: #082f49; font-weight: bold; }
@@ -103,25 +102,26 @@
       line-height: 1.6;
     }
     .plan-highlight {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: bold;
       color: #f1f5f9;
       margin: 4px 0;
+    }
+    .text-waste {
+      color: #f87171;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>🧪 แนะนำการใช้ขวดเร่งเวลาที่ดีที่สุด</h2>
+    <h2>🧪 แนะนำการใช้ขวดเร่งเวลา Clone</h2>
 
     <div class="form-group">
       <label>เวลาที่ต้องใช้โคลนทั้งหมด</label>
       <div class="row">
-        <input type="number" id="hours" placeholder="ชั่วโมง" value="0" min="0" oninput="calculate()">
-        <label style="font-size:0.75rem; align-self:center;">ชั่วโมง</label>
-        <input type="number" id="minutes" placeholder="นาที" value="0" min="0" max="59" oninput="calculate()">
-        <label style="font-size:0.75rem; align-self:center;">นาที</label>
+        <input type="number" id="hours" placeholder="ชั่วโมง" value="11" min="0" oninput="calculate()">
+        <input type="number" id="minutes" placeholder="นาที" value="30" min="0" max="59" oninput="calculate()">
       </div>
     </div>
 
@@ -131,19 +131,19 @@
         <div style="flex: 1;">
           <label>🔷 ขวดใหญ่ (5 นาที)</label>
           <select id="multiplierA" onchange="calculate()">
-            <option value="10">10 เท่า (ลด 50 นาที)</option>
-            <option value="15" selected>15 เท่า (ลด 75 นาที)</option>
-            <option value="20">20 เท่า (ลด 100 นาที)</option>
-            <option value="30">30 เท่า (ลด 150 นาที)</option>
+            <option value="10">10 เท่า (ลด 50 นาที/ขวด)</option>
+            <option value="15" selected>15 เท่า (ลด 75 นาที/ขวด)</option>
+            <option value="20">20 เท่า (ลด 100 นาที/ขวด)</option>
+            <option value="30">30 เท่า (ลด 150 นาที/ขวด)</option>
           </select>
         </div>
         <div style="flex: 1;">
           <label>🔶 ขวดเล็ก (5 นาที)</label>
           <select id="multiplierB" onchange="calculate()">
-            <option value="2">2 เท่า (ลด 10 นาที)</option>
-            <option value="5">5 เท่า (ลด 25 นาที)</option>
-            <option value="8">8 เท่า (ลด 40 นาที)</option>
-            <option value="10" selected>10 เท่า (ลด 50 นาที)</option>
+            <option value="2">2 เท่า (ลด 10 นาที/ขวด)</option>
+            <option value="5">5 เท่า (ลด 25 นาที/ขวด)</option>
+            <option value="8">8 เท่า (ลด 40 นาที/ขวด)</option>
+            <option value="10" selected>10 เท่า (ลด 50 นาที/ขวด)</option>
           </select>
         </div>
       </div>
@@ -152,7 +152,7 @@
     <!-- แผนที่ 1: ผสมคุ้มสุด -->
     <div class="plan-card plan-best">
       <div class="plan-title" style="color: #4ade80;">
-        <span>🎯 แผนคุ้มค่าที่สุด (ไม่เหลือเศษทิ้ง)</span>
+        <span>🎯 แผนคุ้มค่าที่สุด (ประหยัดขวด ไม่ล้นทิ้ง)</span>
         <span class="badge badge-green">แนะนำ</span>
       </div>
       <div class="plan-highlight" id="optMix">-</div>
@@ -163,7 +163,7 @@
     <div class="plan-card plan-fast">
       <div class="plan-title" style="color: #38bdf8;">
         <span>⚡ แผนกดคู่กันพร้อมกัน (เสร็จไวสุดในชีวิตจริง)</span>
-        <span class="badge badge-blue">ประหยัดเวลารอ</span>
+        <span class="badge badge-blue">เร็วที่สุด</span>
       </div>
       <div class="plan-highlight" id="optCombo">-</div>
       <div class="plan-detail" id="optComboDetail">-</div>
@@ -179,7 +179,7 @@
   </div>
 
   <script>
-    const DURATION = 5;
+    const DURATION = 5; // แต่ละขวดมีระยะเวลาทำงาน 5 นาที
 
     function formatHM(totalMinutes) {
       const h = Math.floor(totalMinutes / 60);
@@ -187,6 +187,14 @@
       if (h > 0 && m > 0) return `${h} ชม. ${m} นาที`;
       if (h > 0) return `${h} ชม.`;
       return `${m} นาที`;
+    }
+
+    function formatTimeSec(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.round(seconds % 60);
+      if (m > 0 && s > 0) return `${m} นาที ${s} วินาที`;
+      if (m > 0) return `${m} นาที`;
+      return `${s} วินาที`;
     }
 
     function calculate() {
@@ -197,8 +205,8 @@
       const multB = parseFloat(document.getElementById('multiplierB').value) || 10;
 
       const targetMinutes = (hours * 60) + minutes;
-      const speedA = multA * DURATION; // ขวดใหญ่ 15x = 75 นาที
-      const speedB = multB * DURATION; // ขวดเล็ก 10x = 50 นาที
+      const speedA = multA * DURATION; // ลดเวลาหลอดเกมได้กี่นาที
+      const speedB = multB * DURATION; // ลดเวลาหลอดเกมได้กี่นาที
 
       if (targetMinutes <= 0) {
         document.getElementById('optMix').innerText = 'กรุณากรอกเวลา';
@@ -209,7 +217,7 @@
         return;
       }
 
-      // --- 1. แผนคุ้มค่าที่สุด (หาชุดผสมที่เวลาเกินน้อยที่สุด) ---
+      // --- 1. แผนคุ้มค่าที่สุด ---
       let bestA = 0;
       let bestB = 0;
       let minExcess = Infinity;
@@ -229,41 +237,42 @@
       }
 
       const mixTotalTime = (bestA * speedA) + (bestB * speedB);
-      const mixWaitReal = (bestA + bestB) * DURATION;
-
       let mixStr = '';
       if (bestA > 0 && bestB > 0) {
         mixStr = `ขวดใหญ่ ${bestA} ขวด + ขวดเล็ก ${bestB} ขวด`;
       } else if (bestA > 0) {
-        mixStr = `ขวดใหญ่ ${bestA} ขวด (ไม่ต้องใช้ขวดเล็ก)`;
+        mixStr = `ขวดใหญ่ ${bestA} ขวด`;
       } else {
-        mixStr = `ขวดเล็ก ${bestB} ขวด (ไม่ต้องใช้ขวดใหญ่)`;
+        mixStr = `ขวดเล็ก ${bestB} ขวด`;
       }
 
       document.getElementById('optMix').innerText = mixStr;
       document.getElementById('optMixDetail').innerHTML = `
-        • รวมเวลาเกมที่เร่งได้: <b>${formatHM(mixTotalTime)}</b> (เกินทิ้งเพียง ${minExcess} นาที)<br>
-        • เวลารอจริงในชีวิต: <b>${mixWaitReal} นาที</b> (เมื่อกดทีละขวด)
+        • เร่งหลอดเกมได้รวม: <b>${formatHM(mixTotalTime)}</b> (หลอดเกมล้นทิ้งเพียง ${minExcess} นาที)<br>
+        • เวลารอจริงถ้ากดต่อกัน: <b>${(bestA + bestB) * DURATION} นาที</b>
       `;
 
-      // --- 2. แผนกดคู่กันพร้อมกัน (Combo 1 ใหญ่ + 1 เล็ก ใน 5 นาที = ลด 125 นาที) ---
-      const comboSpeed = speedA + speedB;
-      const comboSets = Math.ceil(targetMinutes / comboSpeed);
-      const comboWaitReal = comboSets * DURATION;
-      const comboExcess = (comboSets * comboSpeed) - targetMinutes;
+      // --- 2. แผนกดคู่กันพร้อมกัน ---
+      const comboSpeedPerSet = speedA + speedB; // 1 รอบ (5 นาที) หลอดเกมลดได้ 125 นาที
+      const comboSets = Math.ceil(targetMinutes / comboSpeedPerSet);
+      const exactRealSecNeeded = (targetMinutes / (multA + multB)) * 60; // วินาทีจริงที่โคลนเสร็จ
+      const totalAllocatedSec = comboSets * DURATION * 60; // วินาทีทั้งหมดของจำนวนขวดที่กด
+      const wasteRealSec = totalAllocatedSec - exactRealSecNeeded;
+      const gameExcessMinutes = (comboSets * comboSpeedPerSet) - targetMinutes;
 
-      document.getElementById('optCombo').innerText = `กดพร้อมกัน ${comboSets} รอบ (ใหญ่ ${comboSets} + เล็ก ${comboSets} ขวด)`;
+      document.getElementById('optCombo').innerText = `กดพร้อมกัน ${comboSets} คู่ (ใหญ่ ${comboSets} + เล็ก ${comboSets} ขวด)`;
       document.getElementById('optComboDetail').innerHTML = `
-        • เวลาจริงในชีวิตที่ใช้: <b style="color:#38bdf8;">เพียง ${comboWaitReal} นาที</b> (กดรวดเดียว)<br>
-        • รวมเวลาเกมที่ลดได้: <b>${formatHM(comboSets * comboSpeed)}</b> (เกิน ${comboExcess} นาที)
+        • <b>เวลาจริงที่ต้องรอ:</b> <span style="color:#38bdf8; font-weight:bold;">${formatTimeSec(exactRealSecNeeded)}</span> (เสร็จสมบูรณ์)<br>
+        • <b>หลอดเกมที่เร่งได้:</b> ${formatHM(comboSets * comboSpeedPerSet)} <span class="text-waste">(ล้นทิ้ง ${gameExcessMinutes} นาทีในเกม)</span><br>
+        • <small style="color:#94a3b8;">*ในคู่สุดท้าย จะเสร็จก่อนเวลาบัฟหมด ${formatTimeSec(wasteRealSec)}</small>
       `;
 
       // --- 3. แผนขวดเดี่ยว ---
       const onlyA = Math.ceil(targetMinutes / speedA);
       const onlyB = Math.ceil(targetMinutes / speedB);
       document.getElementById('optSingle').innerHTML = `
-        • <b>ขวดใหญ่ล้วน (15x):</b> ${onlyA} ขวด (เกิน ${(onlyA * speedA) - targetMinutes} นาที | รอจริง ${onlyA * DURATION} นาที)<br>
-        • <b>ขวดเล็กล้วน (10x):</b> ${onlyB} ขวด (เกิน ${(onlyB * speedB) - targetMinutes} นาที | รอจริง ${onlyB * DURATION} นาที)
+        • <b>ขวดใหญ่ล้วน (15x):</b> ${onlyA} ขวด (รอจริง ${onlyA * DURATION} นาที | ล้นเกม ${(onlyA * speedA) - targetMinutes} นาที)<br>
+        • <b>ขวดเล็กล้วน (10x):</b> ${onlyB} ขวด (รอจริง ${onlyB * DURATION} นาที | ล้นเกม ${(onlyB * speedB) - targetMinutes} นาที)
       `;
     }
 
